@@ -8,14 +8,18 @@ class Invader{
   PVector pos;
   int speed,xDir,type,level;
   boolean alive;
+  int firingSpeed;
+  int firingCooldown;
   Invader(PVector ipos,int ispeed,int kind){
     pos=ipos;
     speed=ispeed;
     type=kind;
     alive=true;
     xDir=1;
+    firingCooldown=int(random(60));
   }    
   void move(){
+    updateWidth();
     if(frameRate%(61-frameRate/surviving)==0){
       if(pos.x+shortest*size+speed<0|pos.x+longest*size+speed>width){
         pos.y+=speed;
@@ -24,6 +28,13 @@ class Invader{
       else{
         pos.x+=speed;
       }
+    }
+  }
+  void shoot(){
+    firingCooldown=max(0,firingCooldown-1);
+    if(firingCooldown==0){
+      ProjectileStorage.add(new Projectile(false,new PVector(pos.x+size/2,pos.y+size/2),new PVector(3,10),new PVector(0,10),1.0,10.0,"Rect",#000000));
+      firingCooldown=int(random(60/surviving));
     }
   }
 }
@@ -51,4 +62,3 @@ void updateWidth(){
     }
   }
 }
-//not sure why it causes an error
