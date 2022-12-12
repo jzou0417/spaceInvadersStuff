@@ -1,32 +1,42 @@
 boolean AHeld,DHeld,spaceHeld = false;
+int score = 0;
 Player curPlr;
 void setup(){
  size(500,800); 
  frameRate(60);
  curPlr = new Player(new PVector(width/2,height - 80),5,20);
   for(int i = 0; i < STAR_COUNT; i++){
-    StarStorage.add(new Star());
+     StarStorage = (Star[]) append(StarStorage,new Star());
   }
 }
 
 void draw(){
  background(0);
  //background stuf
- for(int i = 0; i < StarStorage.size(); i++){
-  Star curStar = StarStorage.get(i);
-  curStar.display(); 
-  if(curStar.yPos - curStar.size > height){
-   StarStorage.remove(i); 
-   StarStorage.add(new Star(-curStar.size));
-  }
+ for(int i = 0; i < StarStorage.length; i++){
+   if(StarStorage[i] != null){
+     Star curStar = StarStorage[i];
+      curStar.display(); 
+      if(curStar.yPos - curStar.size > height){
+       StarStorage[i] = null; 
+       StarStorage = (Star[]) append(StarStorage,new Star(-curStar.size));
+    
+      }
+   }
+  
  }
  
- for(int i = 0; i < ProjectileStorage.size(); i++){
-   ProjectileStorage.get(i).move(); 
-   ProjectileStorage.get(i).checkCollisions(); 
-   ProjectileStorage.get(i).display(); 
+ fill(255);
+  rect(50,50,width-100, 100);
+ for(int i = 0; i < ProjectileStorage.length; i++){
+   ProjectileStorage[i].move(); 
+   ProjectileStorage[i].checkCollisions(); 
+   ProjectileStorage[i].display(); 
  }
+
  
+ 
+
  curPlr.display();
  curPlr.move();
  if(curPlr.canShootProjectile == true && spaceHeld == true){
@@ -59,7 +69,10 @@ void updateInfoBar(){
   rect(-5,0,3,25);
   rect(5,0,3,25);
   popMatrix();
-    
+  
+  textAlign(LEFT);
+  fill(255);
+  text("SCORE: " + score,25,height-25);
 }
 
 
