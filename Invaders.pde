@@ -9,7 +9,7 @@ interface Invader {
 class InvaderGroup implements Invader {
   PVector pos;
   float speed, xDir;
-  ArrayList<InvaderGrunt> InvadersInGroup = new ArrayList<InvaderGrunt>();
+  InvaderGrunt[][] InvadersInGroup = new InvaderGrunt[][] {};
    
 
   InvaderGroup(PVector pos, float speed, float xDir, int invaderRows, int invaderColumns){
