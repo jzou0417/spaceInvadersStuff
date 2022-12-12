@@ -11,6 +11,14 @@ boolean CircleCircleCollision(PVector pos1, PVector pos2, float c1Size, float c2
 }
 
 
+boolean RectRectCollision(PVector rect1, PVector size1, PVector rect2, PVector size2){
+  if( rect1.x < rect2.x + size2.x && rect1.x + size1.x > rect2.x && rect1.y < rect2.y + size2.y && size1.y + rect1.y > rect2.y){
+    return true;
+  }
+  return false;
+}
+
+
 void makeBorders(int posX,int posY,int sizeX,int sizeY,int lineSize,color lineColor){
   stroke(lineColor);
   line(posX,posY,posX+lineSize,posY);

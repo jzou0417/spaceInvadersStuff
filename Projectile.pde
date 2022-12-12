@@ -1,9 +1,9 @@
-ArrayList<Projectile> ProjectileStorage = new ArrayList<Projectile>();
+Projectile[] ProjectileStorage = new Projectile[] {};
 
 
 
 class Projectile {
-  PVector pos,size,dir;
+  PVector pos,size,dir,offset;
   float damage,speed;
   color projColor;
   String projType;
@@ -18,6 +18,7 @@ class Projectile {
     this.speed = speed;
     this.projType = projType;
     this.projColor = projColor;
+    this.offset = new PVector(-size.x/2, -size.y/2);
   }
   
   void display(){
@@ -27,7 +28,7 @@ class Projectile {
     //TODO: rotate da projecitle, use tan/atan?
     switch(projType){
      case "Rect":
-       rect(-size.x/2,-size.y/2,size.x,size.y);
+       rect(offset.x,offset.y,size.x,size.y);
        break;
      case "Ellipse":
        ellipse(pos.x,pos.y,size.x,size.y);
@@ -46,6 +47,9 @@ class Projectile {
     } else {
       
     }
-    
+    if(RectRectCollision(new PVector(pos.x + offset.x,pos.y + offset.y),size,new PVector(50,50),new PVector(width-100,100)) == true){
+      fill(255,0,0);
+      rect(50,50,width-100, 100);
+    }
   }
 }

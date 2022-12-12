@@ -1,4 +1,4 @@
-ArrayList<Star> StarStorage = new ArrayList<Star>();
+Star[] StarStorage = new Star[] {};
 int STAR_COUNT = 20;
 
 class Star {

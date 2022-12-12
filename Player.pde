@@ -33,7 +33,7 @@ class Player {
    switch(type){
     case "Projectile":
       
-      ProjectileStorage.add(new Projectile(true,new PVector(pos.x,pos.y),projectileSize,new PVector(0,-10),projectileDamage,projectileSpeed,"Rect",color(255,200,200,200)));
+      ProjectileStorage = (Projectile[]) append(ProjectileStorage,new Projectile(true,new PVector(pos.x,pos.y),projectileSize,new PVector(0,-10),projectileDamage,projectileSpeed,"Rect",color(255,200,200,200)));
       canShootProjectile = false;
       projectileCooldown = projectileReloadSpeed;
       break;
