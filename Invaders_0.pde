@@ -2,10 +2,11 @@ Invader[][] InvaderGroup=new Invader[5][11];
 int longest=11;
 int shortest=1;
 int surviving=55;
+int size=20;
 
 class Invader{
   PVector pos;
-  int speed,xDir,type,level,size=20;
+  int speed,xDir,type,level;
   boolean alive;
   Invader(PVector ipos,int ispeed,int kind){
     pos=ipos;
@@ -13,10 +14,9 @@ class Invader{
     type=kind;
     alive=true;
     xDir=1;
-  }
-    
+  }    
   void move(){
-    if(framerate%(61-framerate/suriving)){
+    if(frameRate%(61-frameRate/surviving)==0){
       if(pos.x+shortest*size+speed<0|pos.x+longest*size+speed>width){
         pos.y+=speed;
         xDir*=-1;
@@ -25,10 +25,10 @@ class Invader{
         pos.x+=speed;
       }
     }
+  }
 }
-
 void setupInvader(int level){
-  for(int i=0;i<InvaderGroup.size;i++){
+  for(int i=0;i<InvaderGroup.length;i++){
     for(int ii=0;ii<InvaderGroup[i].length;ii++){
       switch(i){
         case 0:
@@ -41,11 +41,10 @@ void setupInvader(int level){
     }
   }
 }
-
 void updateWidth(){
   for(int i=0;i<InvaderGroup.length;i++){
     for(int ii=0;ii<InvaderGroup[i].length;ii++){
-      if(InvaderGroup[i][ii]==true){
+      if(InvaderGroup[i][ii].alive==true){
         shortest=min(ii,shortest);
         longest=max(ii,longest);
       }
