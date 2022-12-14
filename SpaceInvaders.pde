@@ -1,3 +1,5 @@
+
+
 boolean AHeld,DHeld,spaceHeld = false;
 int score = 0;
 Player curPlr;
@@ -8,6 +10,13 @@ void setup(){
   for(int i = 0; i < STAR_COUNT; i++){
      StarStorage = (Star[]) append(StarStorage,new Star());
   }
+  
+  
+  //invadergroup position X MUST be 10 + 20N (N being an integer) or it won't hit the sides right
+  InvaderStorage = (Invader[]) append(InvaderStorage,new InvaderGroup(new PVector(10,20),30,40*60,1,5,8,20));
+
+
+
 }
 
 void draw(){
@@ -29,17 +38,36 @@ void draw(){
  fill(255);
   rect(50,50,width-100, 100);
  for(int i = 0; i < ProjectileStorage.length; i++){
-   ProjectileStorage[i].move(); 
-   ProjectileStorage[i].checkCollisions(); 
-   ProjectileStorage[i].display(); 
+   if(ProjectileStorage[i] != null){
+     Projectile proj = ProjectileStorage[i];
+     proj.move(); 
+     proj.checkCollisions(); 
+     proj.display(); 
+     if(proj.pos.y > height*2 || proj.pos.y < -height*2 || proj.pos.x > width*2 || proj.pos.x < -width*2){
+        ProjectileStorage[i] = null;
+     }
+   }
  }
 
+  for(int i = 0; i < InvaderStorage.length; i++){
+    if(InvaderStorage[i] != null){
+      Invader invader = InvaderStorage[i];
+      invader.show();
+      invader.move(); 
+      if(invader.getState() == false){
+        InvaderStorage[i] = null;
+      }
+    }
+   
+    
+ }
+ 
  
  
 
  curPlr.display();
  curPlr.move();
- if(curPlr.canShootProjectile == true && spaceHeld == true){
+ if(curPlr.canShoot == true && spaceHeld == true){
   curPlr.shoot("Projectile"); 
  }
  updateInfoBar();
@@ -59,7 +87,7 @@ void updateInfoBar(){
   noStroke();
 
   fill(200,255,200,50);
-  rect(width-50,height-50,lerp(0,50,float(curPlr.projectileCooldown)/curPlr.projectileReloadSpeed),50);
+  rect(width-50,height-50,lerp(0,50,float(curPlr.cd)/curPlr.rs),50);
 
   fill(255,200,200,150);
   pushMatrix();

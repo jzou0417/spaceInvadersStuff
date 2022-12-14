@@ -18,6 +18,12 @@ boolean RectRectCollision(PVector rect1, PVector size1, PVector rect2, PVector s
   return false;
 }
 
+int[][] interpretFromStringToArray(String arr){
+  println(arr);
+ return new int[][] {};
+}
+
+
 
 void makeBorders(int posX,int posY,int sizeX,int sizeY,int lineSize,color lineColor){
   stroke(lineColor);

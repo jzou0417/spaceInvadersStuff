@@ -3,13 +3,12 @@ class Player {
  int size,animationFrame;
  float speed;
  
- //ProjectileData
- boolean canShootProjectile = true;
- int projectileCooldown = 0;
- int projectileReloadSpeed = 100;
- PVector projectileSize = new PVector(3,10);
- float projectileSpeed = 10;
- float projectileDamage = 10;
+  //ProjectileData
+  boolean canShoot = false;
+  int cd,rs = 100;
+  PVector pSize = new PVector(3,10);
+  float pSpeed = 10;
+  float pDamage = 10;
  
  Player(PVector pos,float speed,int size){
    this.pos = pos;
@@ -23,9 +22,9 @@ class Player {
    circle(pos.x - width,pos.y,size);
    circle(pos.x + width,pos.y,size);
    
-   projectileCooldown = max(0,projectileCooldown - 1);
-   if(projectileCooldown == 0){
-    canShootProjectile = true; 
+   cd = max(0,cd - 1);
+   if(cd == 0){
+    canShoot = true; 
    }
  }
  
@@ -33,9 +32,9 @@ class Player {
    switch(type){
     case "Projectile":
       
-      ProjectileStorage = (Projectile[]) append(ProjectileStorage,new Projectile(true,new PVector(pos.x,pos.y),projectileSize,new PVector(0,-10),projectileDamage,projectileSpeed,"Rect",color(255,200,200,200)));
-      canShootProjectile = false;
-      projectileCooldown = projectileReloadSpeed;
+      ProjectileStorage = (Projectile[]) append(ProjectileStorage,new Projectile(true,new PVector(pos.x,pos.y),pSize,new PVector(0,-1),pDamage,pSpeed,"Rect",color(255,200,200,200)));
+      canShoot = false;
+      cd = rs;
       break;
      
    }
@@ -53,7 +52,6 @@ class Player {
   } else if(pos.x > width){
    pos.x = 0; 
   }
-  println(pos.x);
  }
   
 }
