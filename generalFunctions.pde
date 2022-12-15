@@ -20,7 +20,40 @@ boolean RectRectCollision(PVector rect1, PVector size1, PVector rect2, PVector s
 
 int[][] interpretFromStringToArray(String arr){
   println(arr);
- return new int[][] {};
+  int row=0;
+  int col=0;
+ for(int i=0;i<arr.length();i++){
+   if(arr.charAt(i)=='|'){
+     row++;
+   }
+ }
+ int[][] array=new int[row+1][];
+ row=0;
+ for(int i=1;i<arr.length();i++){
+    if(arr.charAt(i)==','){
+      col++;
+    }
+    if(arr.charAt(i)=='|'|arr.charAt(i)==']'){
+      array[row]=new int[col+1];
+      col=0;
+      row++;
+    }
+ }
+ row=0;
+ for(int i=1;i<arr.length()-1;i++){
+   String entry=str(arr.charAt(i));
+   if(arr.charAt(i)==','){
+     col++;
+   }
+   if(arr.charAt(i)=='|'){
+     row++;
+     col=0;
+   }
+   else{
+     array[row][col]=int(entry);
+   }
+ }
+ return array;
 }
 
 
