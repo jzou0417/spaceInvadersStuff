@@ -49,16 +49,15 @@ class Projectile {
          Invader invader = InvaderStorage[i];
 
          if(invader.getType().substring(0,12).equals("InvaderGroup")){
+           println(invader.getType());
            int[][] invaderArray = interpretFromStringToArray(invader.getType().substring(12,invader.getType().indexOf("&d")));
-           println("to zelen: THIS IS A STUB, i just need you to finish the function interpretFromStringToArray so that it converts the string to a usable int[][] array (delete this when read)");
-           /*where you need to edit things: 
-           1. here to print invaderArray
-           2. in generalFunctions for the interpretFromStringToArray bit
-           3. in InvaderGroup.getType() to figure out the logic i used for the generation of the string
-           
-           plz finish by tomorw
-           */
-           
+           for(int ii=0;ii<invaderArray.length;ii++){
+             String invaderRow="";
+             for(int iii=0;iii<invaderArray[ii].length;iii++){
+               invaderRow+=str(invaderArray[ii][iii]);
+             }
+             println(invaderRow);
+           }
            
           // println(invader.getType());
           /* InvaderGrunt[][] InvadersInGroup = invader.InvadersInGroup;
