@@ -1,14 +1,15 @@
 class Player {
- PVector pos;
+ PVector pos,moveDir;
  int size,animationFrame;
  float speed;
  
   //ProjectileData
   boolean canShoot = false;
-  int cd,rs = 100;
+  int cd,rs = 20;
   PVector pSize = new PVector(3,10);
+  int pierce = 1;
   float pSpeed = 10;
-  float pDamage = 10;
+  float pDamage = 30;
  
  Player(PVector pos,float speed,int size){
    this.pos = pos;
@@ -32,7 +33,17 @@ class Player {
    switch(type){
     case "Projectile":
       
-      ProjectileStorage = (Projectile[]) append(ProjectileStorage,new Projectile(true,new PVector(pos.x,pos.y),pSize,new PVector(0,-1),pDamage,pSpeed,"Rect",color(255,200,200,200)));
+      ProjectileStorage = (Projectile[]) append(ProjectileStorage,new Projectile(
+      true                        //friendly/enemy projectile, don't touch
+      ,new PVector(pos.x,pos.y)   //shot pos, don't touch
+      ,pSize                      //shot size
+      ,new PVector(0,-1)          //shot dir
+      ,pDamage                    //shot damage
+      ,pSpeed                     //shot speed
+      ,"Rect"                     //shot type (circle or rect)
+      ,color(255,200,200,200)     //shot color
+      ,pierce                     //shot pierce
+      ));
       canShoot = false;
       cd = rs;
       break;
@@ -41,12 +52,24 @@ class Player {
  }
  
  void move(){
+   moveDir = new PVector(0,0);
   if(AHeld){
-    pos.x -= speed;
+    moveDir.x -= 1;
   }
   if(DHeld){
-    pos.x += speed;
+    moveDir.x += 1;
   }
+  if(WHeld){
+   moveDir.y -= 1;
+  }
+  if(SHeld){
+   moveDir.y += 1;
+  }
+  
+  moveDir.normalize();
+  pos.add(new PVector(moveDir.x * speed, moveDir.y * speed));
+  
+  pos.y = max(min(pos.y,height-100),height/2);
   if(pos.x < 0){
     pos.x = width;
   } else if(pos.x > width){

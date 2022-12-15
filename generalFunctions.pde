@@ -19,7 +19,6 @@ boolean RectRectCollision(PVector rect1, PVector size1, PVector rect2, PVector s
 }
 
 int[][] interpretFromStringToArray(String arr){
-  println(arr);
   int row=0;
   int col=0;
  for(int i=0;i<arr.length();i++){
