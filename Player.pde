@@ -1,7 +1,8 @@
 class Player {
  PVector pos,moveDir;
  int size,animationFrame;
- float speed;
+ float speed,health;
+ boolean alive = true;
  
   //ProjectileData
   boolean canShoot = false;
@@ -11,7 +12,8 @@ class Player {
   float pSpeed = 10;
   float pDamage = 30;
  
- Player(PVector pos,float speed,int size){
+ Player(PVector pos,float speed,int size,float health){
+   this.health = health;
    this.pos = pos;
    this.speed = speed;
    this.size = size;
@@ -48,6 +50,15 @@ class Player {
       cd = rs;
       break;
      
+   }
+ }
+ 
+ void takeDamage(float damage){
+   
+   health = max(0, health- damage);
+   if(health == 0){
+    alive = false; 
+    ExplosionStorage = (ExplosionFX[]) append(ExplosionStorage,new ExplosionFX(pos,200,120));
    }
  }
  

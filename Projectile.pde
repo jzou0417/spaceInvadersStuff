@@ -83,9 +83,9 @@ class Projectile {
       
       
     } else {
-      if(RectRectCollision(new PVector(pos.x + offset.x,pos.y + offset.y),size,new PVector(curPlr.pos.x - curPlr.size/2, curPlr.pos.y - curPlr.size/2),new PVector(curPlr.size,curPlr.size)) == true){
-        fill(255,255,0);
-        rect(50,50,width-100, 100);
+      if(curPlr != null && RectRectCollision(new PVector(pos.x + offset.x,pos.y + offset.y),size,new PVector(curPlr.pos.x - curPlr.size/2, curPlr.pos.y - curPlr.size/2),new PVector(curPlr.size,curPlr.size)) == true){
+        pierce = 0;
+        curPlr.takeDamage(damage);
       }
     }
 

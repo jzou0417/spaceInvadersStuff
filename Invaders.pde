@@ -161,7 +161,6 @@ class InvaderGrunt {
   }
 
   void takeDamage(float damageTaken){
-    println(damageTaken);
     health -= damageTaken;
     if(health <= 0){
      alive = false; 

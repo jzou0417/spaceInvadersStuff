@@ -2,98 +2,122 @@
 
 boolean AHeld,DHeld,WHeld,SHeld,spaceHeld = false;
 int score = 0;
+int PLR_HEALTHMAX = 50;
+int loseFrame = -1;
+String gameState = "Game"; //"Menu", "Game", "Lose"
+
 Player curPlr;
 void setup(){
  size(500,800); 
  frameRate(60);
- curPlr = new Player(new PVector(width/2,height - 80),5,20);
-  for(int i = 0; i < STAR_COUNT; i++){
-     StarStorage = (Star[]) append(StarStorage,new Star());
-  }
+ 
   
-  
-  InvaderStorage = (Invader[]) append(InvaderStorage,new InvaderGroup(
-  new PVector(10,20)   //Position of the TOP LEFT corner
-  ,60                  //Framecount per move logic
-  ,300                 //Framecount per average shot per enemy within group
-  ,4                   //Shot velocity
-  ,50                  //Health per invader
-  ,1                   //X direction
-  ,5                   //Number of rows
-  ,8                   //Number of columns
-  ,20                  //Size of each invader's hitbox
-  ));
-
+ resetGame();
 
 
 }
 
 void draw(){
- background(0);
- //background stuf
- for(int i = 0; i < StarStorage.length; i++){
-   if(StarStorage[i] != null){
-     Star curStar = StarStorage[i];
-      curStar.display(); 
-      if(curStar.yPos - curStar.size > height){
-       StarStorage[i] = null; 
-       StarStorage = (Star[]) append(StarStorage,new Star(-curStar.size));
-    
-      }
-   }
-  
- }
-
- for(int i = 0; i < ProjectileStorage.length; i++){
-   if(ProjectileStorage[i] != null){
-     Projectile proj = ProjectileStorage[i];
-     if(proj.pierce > 0){
-       proj.move(); 
-       proj.checkCollisions(); 
-       proj.display(); 
-       if(proj.pos.y > height*2 || proj.pos.y < -height*2 || proj.pos.x > width*2 || proj.pos.x < -width*2){
-          ProjectileStorage[i] = null;
+  switch(gameState){
+    case "Game":
+      background(0);
+       //background stuf
+       for(int i = 0; i < StarStorage.length; i++){
+         if(StarStorage[i] != null){
+           Star curStar = StarStorage[i];
+            curStar.display(); 
+            if(curStar.yPos - curStar.size > height){
+             StarStorage[i] = null; 
+             StarStorage = (Star[]) append(StarStorage,new Star(-curStar.size));
+          
+            }
+         }
+        
        }
-     } else {
-      ProjectileStorage[i] = null; 
-     }
-   
-   }
- }
-
-  for(int i = 0; i < InvaderStorage.length; i++){
-    if(InvaderStorage[i] != null){
-      Invader invader = InvaderStorage[i];
-      invader.show();
-      invader.move(); 
-      if(invader.getState() == false){
-        InvaderStorage[i] = null;
-      }
-    }
-   
-    
- }
- 
- for(int i = 0; i < ExplosionStorage.length; i++){
-   if(ExplosionStorage[i] != null){
-       ExplosionStorage[i].update();
-       if(ExplosionStorage[i].curFrame > ExplosionStorage[i].explosionFrames){
-        ExplosionStorage[i] = null;
+      
+       for(int i = 0; i < ProjectileStorage.length; i++){
+         if(ProjectileStorage[i] != null){
+           Projectile proj = ProjectileStorage[i];
+           if(proj.pierce > 0){
+             proj.move(); 
+             proj.checkCollisions(); 
+             proj.display(); 
+             if(proj.pos.y > height*2 || proj.pos.y < -height*2 || proj.pos.x > width*2 || proj.pos.x < -width*2){
+                ProjectileStorage[i] = null;
+             }
+           } else {
+            ProjectileStorage[i] = null; 
+           }
+         
+         }
        }
-   }
- }
- 
- 
- 
- 
- 
+      
+        for(int i = 0; i < InvaderStorage.length; i++){
+          if(InvaderStorage[i] != null){
+            Invader invader = InvaderStorage[i];
+            invader.show();
+            invader.move(); 
+            if(invader.getState() == false){
+              InvaderStorage[i] = null;
+            }
+          }
+         
+          
+       }
+       
+       for(int i = 0; i < ExplosionStorage.length; i++){
+         if(ExplosionStorage[i] != null){
+             ExplosionStorage[i].update();
+             if(ExplosionStorage[i].curFrame > ExplosionStorage[i].explosionFrames){
+              ExplosionStorage[i] = null;
+             }
+         }
+       }
+       
+       
+       
+       
+       
+       if(curPlr != null) {
+         curPlr.display();
+         curPlr.move();
+         if(curPlr.canShoot == true && spaceHeld == true){
+          curPlr.shoot("Projectile"); 
+         }
+         updateInfoBar();
+         if(curPlr.alive == false){
+          curPlr = null; 
+          loseFrame = frameCount;
+         }
+       }
+       
+       
+       
+       if(loseFrame != -1){
+         fill(0,0,0,lerp(0,255,float(frameCount - loseFrame)/120));
+         rect(0,0,width,height);
+         if(frameCount > loseFrame + 120){
+          gameState = "Lose"; 
+         }
+       }
+      
+       break;
+     case "Lose":
+       background(0);
+       textAlign(CENTER,CENTER);
+       fill(255,255,255,lerp(0,255,float(frameCount - (loseFrame + 120))/120));
+       textSize(25);
+       text("you lost (placeholder!)",width/2,height/2 - 
+         lerp(0,300,smoothTween(
 
- curPlr.display();
- curPlr.move();
- if(curPlr.canShoot == true && spaceHeld == true){
-  curPlr.shoot("Projectile"); 
+             float(frameCount - (loseFrame + 240)),60,1.25
+
+         ))
+       );
+       
+ 
+ 
  }
- updateInfoBar();
 }
 
 
@@ -124,6 +148,9 @@ void updateInfoBar(){
   textAlign(LEFT);
   fill(255);
   text("SCORE: " + score,25,height-25);
+  float healthPercentage = curPlr.health/PLR_HEALTHMAX;
+  fill(lerp(255,200,healthPercentage),lerp(200,255,healthPercentage),200);
+  rect(100,height - 40, 200 * healthPercentage, 20);
 }
 
 
@@ -140,12 +167,13 @@ void keyPressed(){
     SHeld = true;
   } else if(keyCode == 32){ //Space
     spaceHeld = true;
+  } else if(keyCode == 82){ //R, for debugging
+    resetGame();
   }
   
 }
 
 void keyReleased(){
-  
   if(keyCode == 65){ //A
     AHeld = false;
   } else if(keyCode == 68){ //D
@@ -157,6 +185,6 @@ void keyReleased(){
 
   } else if(keyCode == 32){ //Space
     spaceHeld = false;
-  }
+  } 
   
 }

@@ -70,3 +70,41 @@ void makeBorders(int posX,int posY,int sizeX,int sizeY,int lineSize,color lineCo
   line(posX+sizeX-1,posY+sizeY-1,posX+sizeX-1 - lineSize,posY+sizeY-1);
   line(posX+sizeX-1,posY+sizeY-1,posX+sizeX-1,posY+sizeY-lineSize-1);
 }
+
+
+void resetGame(){
+  //Resetting Stuff
+  ExplosionStorage = new ExplosionFX[] {};
+  InvaderStorage = new Invader[] {};
+  ProjectileStorage = new Projectile[] {};
+  loseFrame = -1;
+  StarStorage = new Star[] {};
+  //Player Creation
+  curPlr = new Player(new PVector(width/2,height - 80),5,20,PLR_HEALTHMAX);
+  //Star Setup
+  for(int i = 0; i < STAR_COUNT; i++){
+     StarStorage = (Star[]) append(StarStorage,new Star());
+  }
+  //Temp
+  InvaderStorage = (Invader[]) append(InvaderStorage,new InvaderGroup(
+  new PVector(10,20)   //Position of the TOP LEFT corner
+  ,60                  //Framecount per move logic
+  ,300                 //Framecount per average shot per enemy within group
+  ,4                   //Shot velocity
+  ,50                  //Health per invader
+  ,1                   //X direction
+  ,5                   //Number of rows
+  ,8                   //Number of columns
+  ,20                  //Size of each invader's hitbox
+  ));
+
+
+}
+
+float constrainFloat(float num){
+ return min(1,max(0,num)); 
+}
+
+float smoothTween(float value,float time,  float intensity){
+  return pow(sin(radians(90*(constrainFloat(value/time)))),1.0/intensity);
+}
