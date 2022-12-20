@@ -4,11 +4,13 @@ void setup(){
 void draw(){
   background(#000000);
   PVector invaderOne=new PVector(0,0);
-  PVector invaderTwo=new PVector(200,200);
-  PVector invaderThree=new PVector(400,400);
+  PVector invaderTwo=new PVector(200,0);
+  PVector invaderThree=new PVector(400,0);
+  PVector Player=new PVector(200,400);
   Invader(0,10,invaderOne);
   Invader(1,10,invaderTwo);
   Invader(2,10,invaderThree);
+  Player(10, Player);
 }
 void Invader(int type,int size,PVector offset){
   noStroke();
@@ -68,32 +70,42 @@ void Invader(int type,int size,PVector offset){
   }
   if(type==2){
     fill(#3bff07);
-    rect(-size,-4*size,2*size,5*size);
-    rect(-2*size,-3*size,4*size,2*size);
-    rect(-3*size,-2*size,6*size,size);
-    rect(-4*size,-size,2*size,2*size);
-    rect(2*size,-size,2*size,2*size);
-    rect(-4*size,0,8*size,size);
+    rect(3*size,0,2*size,5*size);
+    rect(2*size,size,4*size,2*size);
+    rect(size,2*size,6*size,size);
+    rect(0,3*size,2*size,2*size);
+    rect(6*size,3*size,2*size,2*size);
+    rect(0,4*size,8*size,size);
     if(frameCount%30>15){
-      rect(-size,size,2*size,size);
-      rect(-3*size,size,size,size);
-      rect(-4*size,2*size,size,size);
-      rect(-3*size,3*size,size,size);
-      rect(2*size,size,size,size);
-      rect(3*size,2*size,size,size);
-      rect(2*size,3*size,size,size);
+      rect(3*size,5*size,2*size,size);
+      rect(size,5*size,size,size);
+      rect(0,6*size,size,size);
+      rect(size,7*size,size,size);
+      rect(6*size,5*size,size,size);
+      rect(7*size,6*size,size,size);
+      rect(6*size,7*size,size,size);
     }
     else{
-      rect(-2*size,size,size,size);
-      rect(size,size,size,size);
-      rect(-3*size,2*size,size,size);
-      rect(-size,2*size,2*size,size);
-      rect(2*size,2*size,size,size);
-      rect(-4*size,3*size,size,size);
-      rect(-2*size,3*size,size,size);
-      rect(size,3*size,size,size);
-      rect(3*size,3*size,size,size);
+      rect(2*size,5*size,size,size);
+      rect(5*size,5*size,size,size);
+      rect(size,6*size,size,size);
+      rect(3*size,6*size,2*size,size);
+      rect(6*size,6*size,size,size);
+      rect(0,7*size,size,size);
+      rect(2*size,7*size,size,size);
+      rect(5*size,7*size,size,size);
+      rect(7*size,7*size,size,size);
     }
   }
+  popMatrix();
+}
+void Player(int size, PVector offset){
+  noStroke();
+  pushMatrix();
+  translate(offset.x,offset.y);
+  rect(6*size,0,size,size);
+  rect(5*size,size,3*size,2*size);
+  rect(size,3*size,11*size,size);
+  rect(0,4*size,13*size,4*size);
   popMatrix();
 }
