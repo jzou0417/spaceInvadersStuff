@@ -86,6 +86,7 @@ class Projectile {
       if(curPlr != null && RectRectCollision(new PVector(pos.x + offset.x,pos.y + offset.y),size,new PVector(curPlr.pos.x - curPlr.size/2, curPlr.pos.y - curPlr.size/2),new PVector(curPlr.size,curPlr.size)) == true){
         pierce = 0;
         curPlr.takeDamage(damage);
+        hitFrame = frameCount;
       }
     }
 

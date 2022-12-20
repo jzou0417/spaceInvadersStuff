@@ -16,7 +16,7 @@ class ExplosionFX {
  }
  
  void update(){
-  
+   noStroke();
    pushMatrix();
    translate(pos.x,pos.y);
 

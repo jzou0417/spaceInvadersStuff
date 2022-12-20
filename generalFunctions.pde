@@ -77,14 +77,17 @@ void resetGame(){
   ExplosionStorage = new ExplosionFX[] {};
   InvaderStorage = new Invader[] {};
   ProjectileStorage = new Projectile[] {};
+
+  enemiesKilled = 0;
+  timeSurvived = 0;
   loseFrame = -1;
-  StarStorage = new Star[] {};
+  hitFrame = -1;
+  
+  
   //Player Creation
   curPlr = new Player(new PVector(width/2,height - 80),5,20,PLR_HEALTHMAX);
-  //Star Setup
-  for(int i = 0; i < STAR_COUNT; i++){
-     StarStorage = (Star[]) append(StarStorage,new Star());
-  }
+
+  gameState = "Game";
   //Temp
   InvaderStorage = (Invader[]) append(InvaderStorage,new InvaderGroup(
   new PVector(10,20)   //Position of the TOP LEFT corner
@@ -105,6 +108,6 @@ float constrainFloat(float num){
  return min(1,max(0,num)); 
 }
 
-float smoothTween(float value,float time,  float intensity){
+float smoothTween(float value,float time,  float intensity){ //the one time i will ever use trig for like anything ever
   return pow(sin(radians(90*(constrainFloat(value/time)))),1.0/intensity);
 }

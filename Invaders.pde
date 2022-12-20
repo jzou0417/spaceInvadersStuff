@@ -164,6 +164,7 @@ class InvaderGrunt {
     health -= damageTaken;
     if(health <= 0){
      alive = false; 
+     enemiesKilled++;
      ExplosionStorage = (ExplosionFX[]) append(ExplosionStorage,new ExplosionFX(pos,50,60));
 
     }
