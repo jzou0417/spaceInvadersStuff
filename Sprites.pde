@@ -101,6 +101,7 @@ void Invader(int type,int size,PVector offset){
 }
 void Player(int size, PVector offset){
   noStroke();
+  fill(#22cc00);
   pushMatrix();
   translate(offset.x,offset.y);
   rect(6*size,0,size,size);
