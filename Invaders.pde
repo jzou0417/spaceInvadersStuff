@@ -141,7 +141,36 @@ class InvaderGrunt {
   void update(PVector movePos) {
     fill(255, 255, 255, 255);
     this.pos = new PVector(movePos.x, movePos.y);
-    circle(movePos.x, movePos.y, size);
+    pushMatrix();
+    translate(movePos.x,movePos.y);
+    fill(#3bff07);
+    rect(3*size/8,0,2*size/8,5*size/8);
+    rect(2*size/8,size/8,4*size/8,2*size/8);
+    rect(size/8,2*size/8,6*size/8,size/8);
+    rect(0,3*size/8,2*size/8,2*size/8);
+    rect(6*size/8,3*size/8,2*size/8,2*size/8);
+    rect(0,4*size/8,8*size/8,size/8);
+    if(frameCount%30>15){
+      rect(3*size/8,5*size/8,2*size/8,size/8);
+      rect(size/8,5*size/8,size/8,size/8);
+      rect(0,6*size/8,size/8,size/8);
+      rect(size/8,7*size/8,size/8,size/8);
+      rect(6*size/8,5*size/8,size/8,size/8);
+      rect(7*size/8,6*size/8,size/8,size/8);
+      rect(6*size/8,7*size/8,size/8,size/8);
+    }
+    else{
+      rect(2*size/8,5*size/8,size/8,size/8);
+      rect(5*size/8,5*size/8,size/8,size/8);
+      rect(size/8,6*size/8,size/8,size/8);
+      rect(3*size/8,6*size/8,2*size/8,size/8);
+      rect(6*size/8,6*size/8,size/8,size/8);
+      rect(0,7*size/8,size/8,size/8);
+      rect(2*size/8,7*size/8,size/8,size/8);
+      rect(5*size/8,7*size/8,size/8,size/8);
+      rect(7*size/8,7*size/8,size/8,size/8);
+    }
+    popMatrix();
 
     cd--;
     if (cd == 0) {
