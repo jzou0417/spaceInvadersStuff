@@ -23,11 +23,29 @@ class Player {
   }
   
   void display() {
-    fill(255);
-    circle(pos.x, pos.y, size);
-    circle(pos.x - width, pos.y, size);
-    circle(pos.x + width, pos.y, size);
-
+    noStroke();
+    fill(#22cc00);
+    pushMatrix();
+    translate(pos.x-size/2,pos.y-size/2);
+    rect(6*size/13,0,size/13,size/8);
+    rect(5*size/13,size/8,3*size/13,2*size/8);
+    rect(size/13,3*size/8,11*size/13,size/8);
+    rect(0,4*size/8,13*size/13,4*size/8);
+    popMatrix();
+    pushMatrix();
+    translate(pos.x-width-size/2,pos.y-size/2);
+    rect(6*size/13,0,size/13,size/8);
+    rect(5*size/13,size/8,3*size/13,2*size/8);
+    rect(size/13,3*size/8,11*size/13,size/8);
+    rect(0,4*size/8,13*size/13,4*size/8);
+    popMatrix();
+    pushMatrix();
+    translate(pos.x+width-size/2,pos.y-size/2);
+    rect(6*size/13,0,size/13,size/8);
+    rect(5*size/13,size/8,3*size/13,2*size/8);
+    rect(size/13,3*size/8,11*size/13,size/8);
+    rect(0,4*size/8,13*size/13,4*size/8);
+    popMatrix();
     cd = max(0, cd - 1);
     if (cd == 0) {
       canShoot = true;
