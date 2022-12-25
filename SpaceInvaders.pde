@@ -1,10 +1,23 @@
-boolean AHeld, DHeld, WHeld, SHeld, spaceHeld = false;
-int score = 0;
-int loseFrame = -1;
-int menuFrame = -1;
+boolean AHeld, DHeld, WHeld, SHeld, spaceHeld, scuttling, readTutorial,enemiesAlive,waveComplete = false;
+
+int tabFrame,loseFrame = -1;
 String gameState = "Menu";
 
-int PLR_CASH = 50000;
+int PLR_CASH = 5000;
+int scuttleFrames = 0;
+int CUR_WAVE = 1;
+String WAVE_DESC;
+
+
+
+//Mods (Active, Cash Multiplier)
+float[][] mods = new float[][] {
+{0,1.2},
+{0,1.25},
+{0,1.8},
+{0,-10},
+}; //Hidden, Sudden Death, Flashlight, NoFail
+
 
 //Player Stats
 int[] upgradeStats = new int[] {0,0,0,0,0,0}; //Health, Speed, ROF, Pierce, ProjSpeed, Damage
@@ -12,39 +25,39 @@ int[] upgradeStats = new int[] {0,0,0,0,0,0}; //Health, Speed, ROF, Pierce, Proj
 float[][] HealthLevels = new float[][] {
   {20,200},//baseline
   {30,600},
-  {40,1200},
+  {40,1000},
   {50,0}, //last upgrade
 };
 float[][] SpeedLevels = new float[][] {
-  {3,350},//baseline
-  {5,600},
-  {7,2000}, //last upgrade
+  {3,550},//baseline
+  {5,1200},
+  {7,0}, //last upgrade
 };
 
 float[][] ROFLevels = new float[][] {
   {30,500},//baseline
-  {20,1500},
-  {15,3000},
+  {20,1200},
+  {15,2000},
   {10,0}, //last upgrade
 };
 
 float[][] PierceLevels = new float[][] {
-  {1,3000},//baseline
-  {2,5500},
+  {1,2000},//baseline
+  {2,4000},
   {3,0}, //last upgrade
 };
 
 float[][] ProjSpeedLevels = new float[][] {
-  {8,300},//baseline
-  {10,800},
-  {15,2500},//last upgrade
+  {8,500},//baseline
+  {10,1550},
+  {15,0},//last upgrade
 };
 
 float[][] DamageLevels = new float[][] {
-  {30,200},//baseline
-  {50,1200},
-  {80,2500},
-  {120,0}, //last upgrade
+  {12,200},//baseline
+  {20,1200},
+  {30,3000},
+  {50,0}, //last upgrade
 };
 
 
@@ -72,45 +85,12 @@ void draw() {
     background(0);
     //background stuf
     updateStars();
-
-    for (int i = 0; i < ProjectileStorage.length; i++) {
-      if (ProjectileStorage[i] != null) {
-        Projectile proj = ProjectileStorage[i];
-        if (proj.pierce > 0) {
-          proj.move();
-          proj.checkCollisions();
-          proj.display();
-          if (proj.pos.y > height * 2 || proj.pos.y < -height * 2 || proj.pos.x > width * 2 || proj.pos.x < -width * 2) {
-            ProjectileStorage[i] = null;
-          }
-        } else {
-          ProjectileStorage[i] = null;
-        }
-
-      }
-    }
-
-    for (int i = 0; i < InvaderStorage.length; i++) {
-      if (InvaderStorage[i] != null) {
-        Invader invader = InvaderStorage[i];
-        invader.show();
-        invader.move();
-        if (invader.getState() == false) {
-          InvaderStorage[i] = null;
-        }
-      }
-
-    }
-
-    for (int i = 0; i < ExplosionStorage.length; i++) {
-      if (ExplosionStorage[i] != null) {
-        ExplosionStorage[i].update();
-        if (ExplosionStorage[i].curFrame > ExplosionStorage[i].explosionFrames) {
-          ExplosionStorage[i] = null;
-        }
-      }
-    }
-
+    updateProjectiles();
+    updateInvaders();
+    updateExplosions();
+    updateTags();
+    updateWave();
+    
     if (curPlr != null) {
       curPlr.display();
       curPlr.move();
@@ -123,17 +103,50 @@ void draw() {
         loseFrame = frameCount;
       }
     }
-
+    if(curPlr != null){//Mod Support
+     
+      if(mods[1][0] == 1){
+        curPlr.takeDamage(curPlr.health - 1);
+      }
+      if(mods[2][0] == 1){
+       int vision = 120;
+       if(spaceHeld == true){
+        vision = 75; 
+       }
+       fill(0,0,0,255 - vision/6);
+       rect(0,0,mouseX - vision,height); 
+       rect(mouseX + vision,0,width,height); 
+       rect(mouseX - vision,0,vision*2,mouseY - vision); 
+       rect(mouseX - vision,mouseY + vision,vision*2,height); 
+      }
+    }
+    if (scuttling == true && curPlr != null){
+     scuttleFrames++;
+     textAlign(CENTER,CENTER);
+     fill(255,200,200);
+     textSize(25);
+     text("keep holding J for [" + str(round(20 - scuttleFrames/6.0)/10.0) + "] seconds\nto scuttle your ship",width/2,height/2);
+     if (scuttleFrames > 120){
+       curPlr.alive = false;
+     }
+    }
+    
     if (loseFrame != -1) {
       fill(0, 0, 0, lerp(0, 255, float(frameCount - loseFrame) / 120));
       rect(0, 0, width, height);
       if (frameCount > loseFrame + 120) {
-        gameState = "Lose";
+        changeGameState("Lose");
       }
     }
     if (hitFrame != -1) {
       fill(255, 100, 100, lerp(150, 0, float(frameCount - hitFrame) / 30));
       rect(0, 0, width, height);
+    }
+    tabFrame++;
+    if(waveComplete == true && enemiesAlive == false){
+      changeGameState("Win");
+      CUR_WAVE++;
+     
     }
     break;
   case "Lose":
@@ -156,7 +169,9 @@ void draw() {
     text("time survived: " + str(round(timeSurvived * 10) / 10.0) + "s",
       width / 2 - lerp(300, 0, smoothTween(float(frameCount - (loseFrame + 300)), 60, 1.25)),
       height / 2 - 200);
-
+      
+      
+      
     fill(255, 255, 255, lerp(0, 255, float(frameCount - (loseFrame + 320)) / 60));
     text("press R to restart",
       width / 2 - lerp(300, 0, smoothTween(float(frameCount - (loseFrame + 320)), 60, 1.25)),
@@ -173,18 +188,18 @@ void draw() {
       
      fill(0, 0, 0, lerp(255, 0, float(frameCount - (loseFrame + 120)) / 120));
      rect(0, 0, width, height);
-     
+     tabFrame++;
     break;
   case "Menu":
     background(0);
 
     updateStars();
     textAlign(CENTER, CENTER);
-    fill(255, 255, 255, lerp(0, 255, float(frameCount - menuFrame) / 120));
+    fill(255, 255, 255, lerp(0, 255, float(frameCount - tabFrame) / 120));
     textSize(50);
     text("SPACE INVADERS\n(gluten free)", width / 2, height / 2 -
       lerp(0, 300, smoothTween(
-        float(frameCount - menuFrame), 60, 1.25
+        float(frameCount - tabFrame), 60, 1.25
       ))
     );
     updateButtons();
@@ -197,13 +212,17 @@ void draw() {
     updateButtons();
     
     textAlign(CENTER,CENTER);
-    fill(255, 255, 255, lerp(0, 255, float(frameCount - menuFrame) / 30));
+   
+    fill(255, 255, 255, lerp(0, 255, float(frameCount - tabFrame) / 30));
     textSize(50);
      text("shop!", width / 2, height / 2 -
       lerp(200, 300, smoothTween(
-        float(frameCount - menuFrame), 30, 1.25
+        float(frameCount - tabFrame), 30, 1.25
       ))
     );
+    textSize(20);
+    text("you have $" + str(PLR_CASH),width/2, 150);
+
     textAlign(RIGHT,CENTER);
     textSize(25);
     /*
@@ -213,24 +232,24 @@ void draw() {
     PierceLevels[upgradeStats[3]][0];
     ProjSpeedLevels[upgradeStats[4]][0];
     DamageLevels[upgradeStats[5]][0];*/
-    fill(255, 255, 255, lerp(0, 255, float(frameCount - (menuFrame)) / 40));
-    text("Mobility [" + str(SpeedLevels[upgradeStats[1]][0]) + "]", width/2 + 60 - lerp(300, 0, smoothTween(float(frameCount - (menuFrame)), 40, 1.25)), height/2-185);
+    fill(255, 255, 255, lerp(0, 255, float(frameCount - (tabFrame)) / 40));
+    text("Mobility [" + str(SpeedLevels[upgradeStats[1]][0]) + "]", width/2 + 60 - lerp(300, 0, smoothTween(float(frameCount - (tabFrame)), 40, 1.25)), height/2-185);
     
-    fill(255, 255, 255, lerp(0, 255, float(frameCount - menuFrame+5) / 40));
-    text("Cyclic Rate [" + str(ROFLevels[upgradeStats[2]][0]) + "]", width/2 + 60 - lerp(300, 0, smoothTween(float(frameCount - (menuFrame+5)), 40, 1.25)), height/2-135);
+    fill(255, 255, 255, lerp(0, 255, float(frameCount - tabFrame+5) / 40));
+    text("Cyclic Rate [" + str(ROFLevels[upgradeStats[2]][0]) + "]", width/2 + 60 - lerp(300, 0, smoothTween(float(frameCount - (tabFrame+5)), 40, 1.25)), height/2-135);
     
-    fill(255, 255, 255, lerp(0, 255, float(frameCount - (menuFrame+10)) / 40));
-    text("Hull Integrity [" + str(HealthLevels[upgradeStats[0]][0]) + "]", width/2 + 60 - lerp(300, 0, smoothTween(float(frameCount -(menuFrame+10)), 40, 1.25)), height/2-85);
+    fill(255, 255, 255, lerp(0, 255, float(frameCount - (tabFrame+10)) / 40));
+    text("Hull Integrity [" + str(HealthLevels[upgradeStats[0]][0]) + "]", width/2 + 60 - lerp(300, 0, smoothTween(float(frameCount -(tabFrame+10)), 40, 1.25)), height/2-85);
     
       
-    fill(255, 255, 255, lerp(0, 255, float(frameCount - (menuFrame+15)) / 40));
-    text("Lethality [" + str(DamageLevels[upgradeStats[5]][0]) + "]", width/2 + 60 - lerp(300, 0, smoothTween(float(frameCount - (menuFrame+15)), 40, 1.25)), height/2-35);
+    fill(255, 255, 255, lerp(0, 255, float(frameCount - (tabFrame+15)) / 40));
+    text("Lethality [" + str(DamageLevels[upgradeStats[5]][0]) + "]", width/2 + 60 - lerp(300, 0, smoothTween(float(frameCount - (tabFrame+15)), 40, 1.25)), height/2-35);
     
-    fill(255, 255, 255, lerp(0, 255, float(frameCount - (menuFrame+20)) / 40));
-    text("Penetration [" + str(PierceLevels[upgradeStats[3]][0]) + "]", width/2 + 60 - lerp(300, 0, smoothTween(float(frameCount - (menuFrame+20)), 40, 1.25)), height/2+15);
+    fill(255, 255, 255, lerp(0, 255, float(frameCount - (tabFrame+20)) / 40));
+    text("Penetration [" + str(PierceLevels[upgradeStats[3]][0]) + "]", width/2 + 60 - lerp(300, 0, smoothTween(float(frameCount - (tabFrame+20)), 40, 1.25)), height/2+15);
     
-    fill(255, 255, 255, lerp(0, 255, float(frameCount - (menuFrame+25)) / 40));
-    text("Phaser Velocity [" + str(ProjSpeedLevels[upgradeStats[4]][0]) + "]", width/2 + 60 - lerp(300, 0, smoothTween(float(frameCount - (menuFrame+25)), 40, 1.25)), height/2+65);
+    fill(255, 255, 255, lerp(0, 255, float(frameCount - (tabFrame+25)) / 40));
+    text("Phaser Velocity [" + str(ProjSpeedLevels[upgradeStats[4]][0]) + "]", width/2 + 60 - lerp(300, 0, smoothTween(float(frameCount - (tabFrame+25)), 40, 1.25)), height/2+65);
      
      //Description
      textAlign(CENTER,CENTER);
@@ -241,7 +260,7 @@ void draw() {
         if (RectRectCollision(button.pos, button.size, new PVector(mouseX, mouseY), new PVector(1, 1)) == true) {
            fill(200,255,200);
            switch(button.purpose){
-  
+            
             case "UpgradeHull":
               displayShopReqs(HealthLevels, 0, "Hull Integrity: ");
               break;
@@ -260,16 +279,157 @@ void draw() {
             case "UpgradeDamage":
               displayShopReqs(DamageLevels, 5, "Lethality: ");
               break; 
+            
            }
        }
      }
     break;
   case "Missions":
     background(0);
+     fill(255, 255, 255, lerp(0, 255, float(frameCount - tabFrame) / 30));
+      textSize(50);
+       text("mods!", width / 2, height / 2 -
+        lerp(200, 300, smoothTween(
+          float(frameCount - tabFrame), 30, 1.25
+        ))
+      );
+      
+    textAlign(RIGHT,CENTER);
+    textSize(25);
+    noStroke();
 
+    fill(255, 255, 255, lerp(0, 255, float(frameCount - (tabFrame)) / 40));
+    text("Hidden [" + str(mods[0][1]) + "x]", width/2 + 60 - lerp(300, 0, smoothTween(float(frameCount - (tabFrame)), 40, 1.25)), height/2-185);
+    fill(255,200,200,50);
+    if(mods[0][0] == 1){
+     fill(200,255,200,50); 
+    }
+    rect(width / 2 + 75, height / 2 - 200,50,50);
+    
+    fill(255, 255, 255, lerp(0, 255, float(frameCount - tabFrame+5) / 40));
+    text("Sudden Death [" + str(mods[1][1]) + "x]", width/2 + 60 - lerp(300, 0, smoothTween(float(frameCount - (tabFrame+5)), 40, 1.25)), height/2-135);
+    fill(255,200,200,50);
+    if(mods[1][0] == 1){
+     fill(200,255,200,50); 
+    }
+    rect(width / 2 + 75, height / 2 - 150,50,50);
+    
+    
+    
+    fill(255, 255, 255, lerp(0, 255, float(frameCount - (tabFrame+10)) / 40));
+    text("Flashlight [" + str(mods[2][1]) + "x]", width/2 + 60 - lerp(300, 0, smoothTween(float(frameCount -(tabFrame+10)), 40, 1.25)), height/2-85);
+    fill(255,200,200,50);
+    if(mods[2][0] == 1){
+     fill(200,255,200,50); 
+    }
+    rect(width / 2 + 75, height / 2 - 100,50,50);
+     fill(255, 255, 255, lerp(0, 255, float(frameCount - (tabFrame+15)) / 40));
+    text("No Fail [" + str(mods[3][1]) + "x]", width/2 + 60 - lerp(300, 0, smoothTween(float(frameCount -(tabFrame+10)), 40, 1.25)), height/2-35);
+    fill(255,200,200,50);
+    if(mods[3][0] == 1){
+     fill(200,255,200,50); 
+    }
+    rect(width / 2 + 75, height / 2 - 50,50,50);
+    
+    
+     textAlign(CENTER,CENTER);
+     textSize(25);
+     fill(255);
+     text("multiplier: " + str(calculateScoreMult()),width/2,height/2+20);
+     text("your current wave: " + str(CUR_WAVE),width/2,height/2+50);
+
+    //Description
+     
+     textSize(20);
+    
+     for (int i = 0; i < ButtonStorage.length; i++) {
+        Button button = ButtonStorage[i];
+        if (RectRectCollision(button.pos, button.size, new PVector(mouseX, mouseY), new PVector(1, 1)) == true) {
+           fill(200,255,200);
+           textSize(18);
+           switch(button.purpose){
+            
+            case "ModHidden":
+              text("Projectiles get less visible the closer they are to you.\n(i couldn't think of a lore friendly explanation for this)",width/2, height/2 + 100);
+
+              break;
+            case "ModSD":
+              text("Your cheap chinesium equipment turns out to not be too\ndurable in space. 'Buy once, cry once.' - A smart fellow",width/2, height/2 + 100);
+              break;
+            case "ModFlashlight":
+              text("Your sensor modules malfunction, causing only a portion\nof the field to be visible at a time.",width/2, height/2 + 100);
+              break;
+            case "ModBaby":
+              text("'wahh wahh i suck at video games' - you",width/2, height/2 + 100);
+              break;
+            
+           }
+       }
+     }
+ 
+ 
+ 
     updateStars();
     updateButtons();
     break;
+    case "Tutorial":
+     background(0);
+     fill(255, 255, 255, lerp(0, 255, float(frameCount - tabFrame) / 30));
+      textSize(50);
+       text("tutorial!", width / 2, height / 2 -
+        lerp(200, 300, smoothTween(
+          float(frameCount - tabFrame), 30, 1.25
+        ))
+      );
+      textSize(20);
+      text("CONTROLS LIST:\nMOVE: WASD\nSHOOT: SPACE\nSCUTTLE SHIP (suicide): J\n\ngo to the shop for upgrades\nif you need to test the features (for dw)\nchange the PLR_CASH variable to a large number",width/2,height/2);
+      text("this only pops up once so read instructions plz",width/2,height/2-180);
+
+      updateStars();
+      updateButtons();
+      break;
+    case "Win":
+      background(0);
+      updateStars();
+      textAlign(CENTER, CENTER);
+      fill(255, 255, 255, lerp(0, 255, float(frameCount - (loseFrame + 120)) / 120));
+      textSize(25);
+      text("you beat wave " + str(CUR_WAVE - 1) + "!", width / 2, height / 2 -
+        lerp(0, 300, smoothTween(
+          float(frameCount - (loseFrame + 240)), 60, 1.25
+        ))
+      );
+      fill(255, 255, 255, lerp(0, 255, float(frameCount - (loseFrame + 280)) / 60));
+      text("kills: " + str(enemiesKilled),
+        width / 2 - lerp(300, 0, smoothTween(float(frameCount - (loseFrame + 280)), 60, 1.25)),
+        height / 2 - 250);
+  
+      fill(255, 255, 255, lerp(0, 255, float(frameCount - (loseFrame + 300)) / 60));
+      text("time survived: " + str(round(timeSurvived * 10) / 10.0) + "s",
+        width / 2 - lerp(300, 0, smoothTween(float(frameCount - (loseFrame + 300)), 60, 1.25)),
+        height / 2 - 200);
+        
+        
+        
+      fill(255, 255, 255, lerp(0, 255, float(frameCount - (loseFrame + 320)) / 60));
+      text("press R to continue",
+        width / 2 - lerp(300, 0, smoothTween(float(frameCount - (loseFrame + 320)), 60, 1.25)),
+        height / 2 + 200);
+  
+      fill(255, 255, 255, lerp(0, 255, float(frameCount - (loseFrame + 340)) / 60));
+      text("press M to return to menu",
+        width / 2 - lerp(300, 0, smoothTween(float(frameCount - (loseFrame + 340)), 60, 1.25)),
+        height / 2 + 250);
+        
+        
+        
+        
+        
+       fill(0, 0, 0, lerp(255, 0, float(frameCount - (loseFrame + 120)) / 120));
+       rect(0, 0, width, height);
+       tabFrame++;
+      break;
+      
   }
 }
 
@@ -278,10 +438,15 @@ void updateInfoBar() {
   textAlign(LEFT);
   fill(255);
   textSize(20);
-  text("SCORE: " + score, 25, height - 25);
+  text("$" + str(PLR_CASH), 25, height - 25);
   float healthPercentage = curPlr.health / HealthLevels[upgradeStats[0]][0];
   fill(lerp(255, 200, healthPercentage), lerp(200, 255, healthPercentage), 200);
   rect(120, height - 40, 200 * healthPercentage, 20);
+  
+  fill(255);
+  textSize(20);
+  text("WAVE: " + str(CUR_WAVE) + " // " + WAVE_DESC,25, height - 60);
+
 }
 
 void keyPressed() {
@@ -296,10 +461,12 @@ void keyPressed() {
     SHeld = true;
   } else if (keyCode == 32) { //Space
     spaceHeld = true;
-  } else if (keyCode == 82 && gameState == "Lose") {
+  } else if (keyCode == 82 && (gameState == "Lose" || gameState == "Win")) {
     changeGameState("Game");
-  } else if (keyCode == 77 && gameState == "Lose") {
+  } else if (keyCode == 77 && (gameState == "Lose" || gameState == "Win")) {
     changeGameState("Menu");
+  } else if (keyCode == 74 && gameState == "Game") {
+    scuttling = true; 
   }
 
 }
@@ -316,6 +483,9 @@ void keyReleased() {
 
   } else if (keyCode == 32) { //Space
     spaceHeld = false;
+  } else if (keyCode == 74) {
+    scuttling = false; 
+    scuttleFrames = 0;
   }
 
 }
@@ -338,38 +508,78 @@ void mousePressed() {
         case "MissionSelect":
           changeGameState("Missions");
           break;
-        //the bottom 6 cases are a testament to why roblox > processing (no FindFirstChild()?)
+        //the bottom 9 cases are a testament to why roblox > processing
         case "UpgradeHull":
           if(PLR_CASH >= HealthLevels[upgradeStats[0]][1]){
+           PLR_CASH -= HealthLevels[upgradeStats[0]][1];
+
            upgradeStats[0] = min(HealthLevels.length - 1, upgradeStats[0] + 1);
           }
           break;
         case "UpgradeSpeed":
           if(PLR_CASH >= SpeedLevels[upgradeStats[1]][1]){
+           PLR_CASH -= SpeedLevels[upgradeStats[1]][1];
+
            upgradeStats[1] = min(SpeedLevels.length - 1, upgradeStats[1] + 1);
+
           }
           break;
         case "UpgradeROF":
           if(PLR_CASH >= ROFLevels[upgradeStats[2]][1]){
+           PLR_CASH -= ROFLevels[upgradeStats[2]][1];
+
            upgradeStats[2] = min(ROFLevels.length - 1, upgradeStats[2] + 1);
           }
           break;
         case "UpgradePen":
           if(PLR_CASH >= PierceLevels[upgradeStats[3]][1]){
+           PLR_CASH -= PierceLevels[upgradeStats[3]][1];
            upgradeStats[3] = min(PierceLevels.length - 1, upgradeStats[3] + 1);
+          
           }
           break;
         case "UpgradeVel":
           if(PLR_CASH >= ProjSpeedLevels[upgradeStats[4]][1]){
+           PLR_CASH -= ProjSpeedLevels[upgradeStats[4]][1];
            upgradeStats[4] = min(ProjSpeedLevels.length - 1, upgradeStats[4] + 1);
+           
           }
           break;
         case "UpgradeDamage":
           if(PLR_CASH >= DamageLevels[upgradeStats[5]][1]){
+           PLR_CASH -= DamageLevels[upgradeStats[5]][1];
            upgradeStats[5] = min(DamageLevels.length - 1, upgradeStats[5] + 1);
           }
           break;
-            
+        case "ModHidden": 
+              println("hi");
+              if(mods[0][0] == 1){
+                mods[0][0] = 0;
+              } else {
+               mods[0][0] = 1; 
+              }
+              break; 
+        case "ModSD":
+              if(mods[1][0] == 1){
+                mods[1][0] = 0;
+              } else {
+               mods[1][0] = 1; 
+              }
+              break; 
+        case "ModFlashlight":
+              if(mods[2][0] == 1){
+                mods[2][0] = 0;
+              } else {
+               mods[2][0] = 1; 
+              }
+              break; 
+        case "ModBaby":
+              if(mods[3][0] == 1){
+                mods[3][0] = 0;
+              } else {
+               mods[3][0] = 1; 
+              }
+              break; 
           
       }
     }
